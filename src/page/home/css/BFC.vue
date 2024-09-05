@@ -6,7 +6,7 @@ const el = ref(null);
 let rx = useCssVar("--rx",el)
 let ry = useCssVar("--ry",el)
 const myref = ref<HTMLElement>()
-const tomove = (e) => {  
+const tomove = (e:any) => {  
     const {offsetX,offsetY} = e
     console.log(myref.value?.clientHeight)
 
