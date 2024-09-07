@@ -9,7 +9,6 @@ import zhCn from 'element-plus/es/locale/lang/zh-cn'
 import globalComponents from '@/components'
 const app = createApp(App)
 // 国际化
-console.log(app)
 app.use(ElementPlus, {
     locale: zhCn,
 })
