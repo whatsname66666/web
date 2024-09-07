@@ -26,7 +26,6 @@ const getlist = (arr:Array<objList>) => {
     })
     return [...newMap.values()]
 }
-console.log(getlist(dataLists))
 </script>
 
 <template>
