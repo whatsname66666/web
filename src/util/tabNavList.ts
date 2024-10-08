@@ -90,8 +90,8 @@ const CaseNavList:Array<checkList> = [
     name: '/home/movieList'
   },
   {
-    label: "Promise",
-    name: '/home/boxModel'
+    label: "文件上传",
+    name: '/home/uploadFiled'
   },
 ]
 export {

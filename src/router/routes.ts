@@ -14,6 +14,11 @@ const routerList = [
                 component:()=>import('@/page/home/case/MovieList.vue'),
             },
             {
+                name:'uploadFiled',
+                path:'uploadFiled',
+                component:()=>import('@/page/home/case/UploadFiled.vue'),
+            },
+            {
                 name:'boxModel',
                 path:'boxModel',
                 component:()=>import('@/page/home/css/BoxModel.vue'),
