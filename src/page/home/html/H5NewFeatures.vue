@@ -21,6 +21,7 @@ const predefineColors = ref([
 const logcolor = (e:any) => {
     // document.documentElement 是全局变量时
     const el = document.documentElement
+    localStorage.setItem('color',e)
     // const el = document.getElementById('xxx')
     // 获取 css 变量
     getComputedStyle(el).getPropertyValue(`--el-color-primary`)

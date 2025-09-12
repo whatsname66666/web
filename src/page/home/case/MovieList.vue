@@ -1,13 +1,26 @@
 <script setup lang="ts" name="movieList">
 import { ref,watchEffect,shallowRef } from 'vue'
 import move from '@/mock/movie.json'
+const reuslt = move.map((item)=>{
+  const {id,title,types,url,release_date,score,regions} = item
+  return {
+    id,
+    title,
+    types,
+    url,
+    release_date,
+    score,
+    regions,
+  }
+})
+console.log(reuslt)
 let tableList:any = shallowRef([])
 const pageSize = ref(10)
 const currentPage = ref(1)
 const getData = (star:number,end:number) => {
     let arrlist = []
     for(let i = star; i < end; i++){
-        arrlist.push(move[i])
+        arrlist.push(reuslt[i])
     }
     
     return arrlist
@@ -16,7 +29,7 @@ watchEffect(()=>{
     // currentPage.value 当前页 1
     // pageSize.value    每页多少条数据 10
     let star = (currentPage.value - 1) * pageSize.value;
-    let end = (currentPage.value * pageSize.value ) > move.length ? move.length : (currentPage.value * pageSize.value )
+    let end = (currentPage.value * pageSize.value ) > reuslt.length ? reuslt.length : (currentPage.value * pageSize.value )
     tableList = getData(star,end)
 })
 </script>
@@ -45,7 +58,7 @@ watchEffect(()=>{
     :page-sizes="[10, 50, 100, 200]"
     background 
     layout="total, sizes, prev, pager, next, jumper"
-    :total="move.length" />
+    :total="reuslt.length" />
   </div>
 </template>
 
