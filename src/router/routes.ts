@@ -1,83 +1,53 @@
-const routerList = [
-    {
-        path:'/',
-        redirect:'login'
-    },
-    {
-        path:'/home',
-        component:()=>import('@/page/home/Home.vue'),
-        name:'home',
-        children:[
-            {
-                name:'movieList',
-                path:'movieList',
-                component:()=>import('@/page/home/case/MovieList.vue'),
-            },
-            {
-                name:'uploadFiled',
-                path:'uploadFiled',
-                component:()=>import('@/page/home/case/UploadFiled.vue'),
-            },
-            {
-                name:'boxModel',
-                path:'boxModel',
-                component:()=>import('@/page/home/css/BoxModel.vue'),
-            },
-            {
-                name:'bfc',
-                path:'bfc',
-                component:()=>import('@/page/home/css/BFC.vue'),
-            },
-            {
-                name:'closure',
-                path:'closure',
-                component:()=>import('@/page/home/js/Closure.vue'),
-            },
-            {
-                name:'promise',
-                path:'promise',
-                component:()=>import('@/page/home/js/Promise.vue'),
-            },
-            {
-                name:'h5label',
-                path:'h5label',
-                component:()=>import('@/page/home/html/H5label.vue'),
-            },
-            {
-                name:'h5NewFeatures',
-                path:'h5NewFeatures',
-                component:()=>import('@/page/home/html/H5NewFeatures.vue'),
-            },
-            {
-                name:'es6',
-                path:'es6',
-                component:()=>import('@/page/home/es6/ES6.vue'),
-            },
-            {
-                name:'cache',
-                path:'cache',
-                component:()=>import('@/page/home/browser/Cache.vue'),
-            },
-        ]
-    },
-    {
-        path:'/login',
-        component:()=>import('@/page/login/Login.vue'),
-        name:'login'
-    },
-    // {
-    //     path:'/login',
-    //     component:()=>import('@/page/b.vue'),
-    //     name:'login'
-    // },
-    {
-        path:'/notfount',
-        component:()=>import('@/page/NotFount.vue'),
-        name:'notfount',
-    },
-    {
-        path:'/:pathMatch(.*)*',
-        redirect:'notfount'
-    }
+import type { RouteRecordRaw } from 'vue-router'
+
+// 统一的路由配置
+export const routes: RouteRecordRaw[] = [
+  {
+    path: '/',
+    redirect: '/login'
+  },
+  {
+    path: '/login',
+    component: () => import('@/page/login/Login.vue'),
+    name: 'login'
+  },
+  {
+    path: '/home',
+    component: () => import('@/page/home/Home.vue'),
+    name: 'home',
+    redirect: '/home/html/h5label',
+    children: [
+      // HTML
+      { path: 'html/h5label', component: () => import('@/page/home/html/H5label.vue') },
+      { path: 'html/h5NewFeatures', component: () => import('@/page/home/html/H5NewFeatures.vue') },
+      
+      // CSS
+      { path: 'css/bfc', component: () => import('@/page/home/css/BFC.vue') },
+      { path: 'css/boxModel', component: () => import('@/page/home/css/BoxModel.vue') },
+      { path: 'css/grid', component: () => import('@/page/home/css/grid.vue') },
+      
+      // JS
+      { path: 'js/closure', component: () => import('@/page/home/js/Closure.vue') },
+      { path: 'js/promise', component: () => import('@/page/home/js/Promise.vue') },
+      
+      // ES6
+      { path: 'es6/es6', component: () => import('@/page/home/es6/ES6.vue') },
+      
+      // Browser
+      { path: 'browser/cache', component: () => import('@/page/home/browser/Cache.vue') },
+      
+      // Cases
+      { path: 'cases/movieList', component: () => import('@/page/home/case/MovieList.vue') },
+      { path: 'cases/uploadFiled', component: () => import('@/page/home/case/UploadFiled.vue') }
+    ]
+  },
+  {
+    path: '/codeEditor',
+    component: () => import('@/page/CodeEditor/CodeEditor.vue'),
+    name: 'codeEditor'
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    redirect: '/login'
+  }
 ]
-export default routerList

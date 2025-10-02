@@ -1,105 +1,66 @@
-interface checkList {
-  label:string,
-  name:string,
+export interface NavItem {
+  label: string
+  path: string
 }
-const HomeTabNavList = [
+
+export interface MainCategory {
+  label: string
+  name: string
+  children: NavItem[]
+}
+
+// 统一导航配置
+export const navConfig: MainCategory[] = [
   {
-    index: "0",
-    label: "HTML",
-    name: "HTML",
+    label: 'HTML',
+    name: 'html',
+    children: [
+      { label: 'H5标签', path: '/home/html/h5label' },
+      { label: 'H5新增特性', path: '/home/html/h5NewFeatures' }
+    ]
   },
   {
-    index: "1",
-    label: "CSS",
-    name: "CSS",
+    label: 'CSS',
+    name: 'css',
+    children: [
+      { label: 'BFC', path: '/home/css/bfc' },
+      { label: '盒模型', path: '/home/css/boxModel' },
+      { label: '网格布局', path: '/home/css/grid' }
+    ]
   },
   {
-    index: "2",
-    label: "JS",
-    name: "JS",
+    label: 'JS',
+    name: 'js',
+    children: [
+      { label: '闭包', path: '/home/js/closure' },
+      { label: 'Promise', path: '/home/js/promise' }
+    ]
   },
   {
-    index: "3",
-    label: "ES6",
-    name: "ES6",
+    label: 'ES6',
+    name: 'es6',
+    children: [
+      { label: 'ES6新特性', path: '/home/es6/es6' }
+    ]
   },
   {
-    index: "4",
-    label: "Browser",
-    name: "Browser",
+    label: 'Browser',
+    name: 'browser',
+    children: [
+      { label: '浏览器缓存', path: '/home/browser/cache' }
+    ]
   },
   {
-    index: "5",
-    label: "案例练习",
-    name: "CaseDemo",
-  },
-];
-const HtmlNavList:Array<checkList> = [
-  {
-    label: "H5新增特性",
-    name: '/home/h5label'
-  },
-  {
-    label: "H5标签",
-    name: '/home/h5NewFeatures'
-  },
+    label: '案例练习',
+    name: 'cases',
+    children: [
+      { label: '表格分页案例', path: '/home/cases/movieList' },
+      { label: '文件上传', path: '/home/cases/uploadFiled' }
+    ]
+  }
 ]
-const CssNavList:Array<checkList> = [
-  {
-    label: "BFC",
-    name: '/home/bfc'
-  },
-  {
-    label: "盒模型",
-    name: '/home/boxModel'
-  },
-]
-const JsNavList:Array<checkList> = [
-  {
-    label: "闭包",
-    name: '/home/closure'
-  },
-  {
-    label: "Promise",
-    name: '/home/promise'
-  },
-]
-const ES6NavList:Array<checkList> = [
-  {
-    label: "ES6新特性",
-    name: '/home/es6'
-  },
-  {
-    label: "Promise",
-    name: '/home/boxModel'
-  },
-]
-const BrowserNavList:Array<checkList> = [
-  {
-    label: "浏览器缓存",
-    name: '/home/cache'
-  },
-  {
-    label: "Promise",
-    name: '/home/boxModel'
-  },
-]
-const CaseNavList:Array<checkList> = [
-  {
-    label: "表格分页案例",
-    name: '/home/movieList'
-  },
-  {
-    label: "文件上传",
-    name: '/home/uploadFiled'
-  },
-]
-export {
-  HomeTabNavList,
-  HtmlNavList,
-  CssNavList,
-  JsNavList,
-  ES6NavList,
-  BrowserNavList,
-  CaseNavList
-};
+
+// 获取默认路径
+export const getDefaultPath = (): string => {
+  return navConfig[0].children[0].path
+}

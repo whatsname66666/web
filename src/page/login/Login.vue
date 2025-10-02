@@ -1,17 +1,28 @@
 <script setup lang="ts" name="login">
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
+// import { request } from '@/util/fetch'
+import { login, register } from '@/page/api/base'
+import { ElMessage } from 'element-plus'
+
 const router = useRouter();
 const username = ref("");
 const password = ref("");
+const confirmPassword = ref("");
 const rememberMe = ref(false);
+const isRegisterMode = ref(false); // 新增：区分登录/注册模式
+
 const usernameError = ref("");
 const passwordError = ref("");
+const confirmPasswordError = ref("");
 
 // 创建动态粒子背景
 const createParticles = () => {
   const bgAnimation = document.querySelector(".bg-animation");
   if (!bgAnimation) return;
+
+  // 清空现有粒子
+  bgAnimation.innerHTML = '';
 
   // 创建粒子
   for (let i = 0; i < 20; i++) {
@@ -40,6 +51,10 @@ const createFloatingElements = () => {
   const container = document.querySelector(".login-container");
   if (!container) return;
 
+  // 清空现有浮动元素
+  const existingElements = container.querySelectorAll('.floating-element');
+  existingElements.forEach(el => el.remove());
+
   for (let i = 0; i < 5; i++) {
     const element = document.createElement("div");
     element.classList.add("floating-element");
@@ -65,6 +80,7 @@ const validateForm = () => {
   // 重置错误信息
   usernameError.value = "";
   passwordError.value = "";
+  confirmPasswordError.value = "";
 
   // 验证用户名
   if (!username.value) {
@@ -73,37 +89,112 @@ const validateForm = () => {
   } else if (username.value.length < 4) {
     usernameError.value = "用户名至少4个字符";
     isValid = false;
-  }
+  } 
+  // else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(username.value)) {
+  //   usernameError.value = "请输入有效的邮箱地址";
+  //   isValid = false;
+  // }
 
   // 验证密码
   if (!password.value) {
     passwordError.value = "请输入密码";
     isValid = false;
-  } else if (password.value.length < 4) {
-    passwordError.value = "密码长度至少4个字符";
+  } else if (password.value.length < 6) {
+    passwordError.value = "密码长度至少6个字符";
     isValid = false;
   }
 
-  if(password.value !=='admin' && username.value !== 'test'){
-    passwordError.value = "用户名或密码不对";
-    isValid = false;
+  // 注册模式下验证确认密码
+  if (isRegisterMode.value) {
+    if (!confirmPassword.value) {
+      confirmPasswordError.value = "请确认密码";
+      isValid = false;
+    } else if (password.value !== confirmPassword.value) {
+      confirmPasswordError.value = "两次输入的密码不一致";
+      isValid = false;
+    }
   }
+
   return isValid;
 };
 
-const handleLogin = () => {
+const handleLogin = async (e:any) => {
   if (validateForm()) {
-    // 模拟登录请求
-    console.log("登录信息:", {
-      username: username.value,
-      password: password.value,
-      rememberMe: rememberMe.value,
-    });
+    try{
+      const loginData = await login({
+        email: username.value,
+        password: password.value,
+      })
+      if(loginData){
+        ElMessage.success('登录成功');
+        router.push({
+          name: "home",
+        });
+      }
+    }catch(error:any){
+      if ((error as any).serverMessage || (error as any).message) {
+        ElMessage.error((error as any).serverMessage || (error as any).message);
+      } else {
+        ElMessage.error('登录失败，请稍后重试');
+      }
+       throw error;
+    }
+  }
+};
 
-    // 这里可以添加实际的登录逻辑
-    router.push({
-      name: "home",
-    });
+// 新增：注册处理函数
+const handleRegister = async () => {
+  if (validateForm()) {
+    try {
+      const result = await register({
+        email: username.value,
+        password: password.value,
+      });
+      
+      if (result) {
+        ElMessage.success('注册成功，请登录');
+        // 注册成功后切换到登录模式
+        switchToLoginMode();
+      }
+    } catch (error: any) {
+      if ((error as any).serverMessage || (error as any).message) {
+        ElMessage.error((error as any).serverMessage || (error as any).message);
+      } else {
+        ElMessage.error('注册失败，请稍后重试');
+      }
+      throw error;
+    }
+  }
+};
+
+// 新增：切换到注册模式
+const switchToRegisterMode = () => {
+  isRegisterMode.value = true;
+  // 清空表单
+  password.value = "";
+  confirmPassword.value = "";
+  usernameError.value = "";
+  passwordError.value = "";
+  confirmPasswordError.value = "";
+};
+
+// 新增：切换到登录模式
+const switchToLoginMode = () => {
+  isRegisterMode.value = false;
+  // 清空表单
+  password.value = "";
+  confirmPassword.value = "";
+  usernameError.value = "";
+  passwordError.value = "";
+  confirmPasswordError.value = "";
+};
+
+// 新增：处理表单提交（根据模式调用不同函数）
+const handleSubmit = () => {
+  if (isRegisterMode.value) {
+    handleRegister();
+  } else {
+    handleLogin(new Event('submit'));
   }
 };
 
@@ -120,19 +211,19 @@ onMounted(() => {
 
       <div class="login-container">
         <div class="login-header">
-          <h1>欢迎回来</h1>
-          <p>请输入您的账号信息登录系统</p>
+          <h1>{{ isRegisterMode ? '创建账号' : '欢迎回来' }}</h1>
+          <p>{{ isRegisterMode ? '请输入您的信息创建新账号' : '请输入您的账号信息登录系统' }}</p>
         </div>
 
-        <form @submit.prevent="handleLogin">
+        <form @submit.prevent="handleSubmit">
           <div class="form-group">
-            <label>用户名</label>
+            <label>邮箱</label>
             <div class="input-with-icon">
-              <i>👤</i>
+              <i>📧</i>
               <input
                 type="text"
                 v-model="username"
-                placeholder="请输入用户名"
+                placeholder="请输入邮箱地址"
                 :class="{ error: usernameError }"
               />
             </div>
@@ -153,7 +244,22 @@ onMounted(() => {
             <div class="error-message">{{ passwordError }}</div>
           </div>
 
-          <div class="remember-forgot">
+          <!-- 注册模式下显示确认密码 -->
+          <div class="form-group" v-if="isRegisterMode">
+            <label>确认密码</label>
+            <div class="input-with-icon">
+              <i>🔒</i>
+              <input
+                type="password"
+                v-model="confirmPassword"
+                placeholder="请再次输入密码"
+                :class="{ error: confirmPasswordError }"
+              />
+            </div>
+            <div class="error-message">{{ confirmPasswordError }}</div>
+          </div>
+
+          <div class="remember-forgot" v-if="!isRegisterMode">
             <div class="remember">
               <input type="checkbox" id="remember" v-model="rememberMe" />
               <label for="remember">记住我</label>
@@ -161,10 +267,21 @@ onMounted(() => {
             <a href="#" class="forgot-password">忘记密码？</a>
           </div>
 
-          <button type="submit" class="login-button">登录</button>
+          <button type="submit" class="login-button">
+            {{ isRegisterMode ? '注册' : '登录' }}
+          </button>
+          
+          <!-- 模式切换按钮 -->
+          <button 
+            type="button" 
+            class="register-button" 
+            @click="isRegisterMode ? switchToLoginMode() : switchToRegisterMode()"
+          >
+            {{ isRegisterMode ? '返回登录' : '注册账号' }}
+          </button>
         </form>
 
-        <div class="social-login">
+        <div class="social-login" v-if="!isRegisterMode">
           <p>或使用以下方式登录</p>
           <div class="social-icons">
             <div class="social-icon">G</div>
@@ -173,8 +290,8 @@ onMounted(() => {
           </div>
         </div>
 
-        <div class="signup-link">
-          <p>还没有账号？<a href="#">立即注册</a></p>
+        <div class="signup-link" v-if="!isRegisterMode">
+          <p>还没有账号？<a href="#" @click.prevent="switchToRegisterMode">立即注册</a></p>
         </div>
       </div>
     </div>
@@ -305,7 +422,7 @@ onMounted(() => {
 .login-header {
   text-align: center;
   margin-bottom: 35px;
-  animation: fadeInDown 1s ease;
+  animation: fadeInDown 1s cubic-bezier(0.52, 0.12, 0, 0.83);
 }
 
 .login-header h1 {
@@ -334,6 +451,10 @@ onMounted(() => {
 
 .form-group:nth-child(2) {
   animation-delay: 0.3s;
+}
+
+.form-group:nth-child(3) {
+  animation-delay: 0.4s;
 }
 
 .form-group label {
@@ -428,7 +549,7 @@ onMounted(() => {
   text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
 }
 
-.login-button {
+.login-button, .register-button {
   width: 100%;
   padding: 16px;
   border: none;
@@ -443,11 +564,27 @@ onMounted(() => {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.4s ease;
-  margin-bottom: 20px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  margin-bottom: 15px;
+  box-shadow: 0 5px 15px rgba(16, 141, 236, 0.849);
   animation: fadeInUp 1s ease;
-  animation-delay: 0.5s;
   animation-fill-mode: both;
+}
+
+.login-button {
+  animation-delay: 0.5s;
+}
+
+.register-button {
+  animation-delay: 0.6s;
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.login-button:hover, .register-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
 }
 
 .login-button:hover {
@@ -456,11 +593,13 @@ onMounted(() => {
     rgba(255, 255, 255, 1),
     rgba(255, 255, 255, 0.9)
   );
-  transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
 }
 
-.login-button:active {
+.register-button:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.login-button:active, .register-button:active {
   transform: translateY(0);
 }
 
@@ -468,7 +607,7 @@ onMounted(() => {
   text-align: center;
   margin-top: 30px;
   animation: fadeInUp 1s ease;
-  animation-delay: 0.6s;
+  animation-delay: 0.7s;
   animation-fill-mode: both;
 }
 
@@ -539,7 +678,7 @@ onMounted(() => {
   margin-top: 30px;
   font-size: 15px;
   animation: fadeInUp 1s ease;
-  animation-delay: 0.7s;
+  animation-delay: 0.8s;
   animation-fill-mode: both;
 }
 

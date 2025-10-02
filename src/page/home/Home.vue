@@ -1,89 +1,113 @@
-<script setup lang="ts" name="home">
-import { ref } from 'vue'
-import {
-  HomeTabNavList,
-  HtmlNavList,
-  CssNavList,
-  JsNavList,
-  ES6NavList,
-  BrowserNavList,
-  CaseNavList
-} from '@/util/tabNavList'
-import { useRouter } from 'vue-router'
+<script setup >
+import { ref, computed } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { navConfig, getDefaultPath } from '@/util/tabNavList'
+
 const router = useRouter()
-let TabNavLists = ref(HtmlNavList)
-let activeName = ref('HTML')
-let Router_Link = ref('/home/h5label')
-const handleSelect = (key: any) => {
-  activeName.value = key.props.name
-  switch (key.props.name) {
-    case "HTML":
-      TabNavLists.value = HtmlNavList
-      Router_Link.value = '/home/h5label'
-      router.push({ path: '/home/h5label', })
-      break;
-    case "CSS":
-      TabNavLists.value = CssNavList
-      Router_Link.value = '/home/bfc'
-      router.push({ path: '/home/bfc', })
-      break;
-    case "JS":
-      TabNavLists.value = JsNavList
-      Router_Link.value = '/home/closure'
-      router.push({ path: '/home/closure', })
-      break;
-    case "ES6":
-      TabNavLists.value = ES6NavList
-      Router_Link.value = '/home/es6'
-      router.push({ path: '/home/es6', })
-      break;
-    case "Browser":
-      TabNavLists.value = BrowserNavList
-      Router_Link.value = '/home/cache'
-      router.push({ path: '/home/cache', })
-      break;
-    case "CaseDemo":
-      TabNavLists.value = CaseNavList
-      Router_Link.value = '/home/movieList'
-      router.push({ path: '/home/movieList', })
-      break;
+const route = useRoute()
+
+// 响应式状态
+const activeMainTab = ref('html')
+const subNavList = computed(() => {
+  const category = navConfig.find(item => item.name === activeMainTab.value)
+  return category?.children || []
+})
+
+// 处理主分类切换
+const handleMainTabChange = (tabName) => {
+  activeMainTab.value = tabName
+  const defaultPath = navConfig.find(item => item.name === tabName)?.children[0]?.path
+  if (defaultPath && route.path !== defaultPath) {
+    router.push(defaultPath)
   }
 }
 
-const handleClick = (tab: any) => {
-  router.push({
-    path: tab.props.name,
-  })
+// 处理子分类点击
+const handleSubTabClick = (path) => {
+  router.push(path)
 }
+
+// 初始化：根据当前路由设置激活状态
+const initializeActiveState = () => {
+  const currentPath = route.path
+  for (const category of navConfig) {
+    const matchedChild = category.children.find(child => 
+      currentPath.startsWith(child.path.split('/').slice(0, -1).join('/'))
+    )
+    if (matchedChild) {
+      activeMainTab.value = category.name
+      break
+    }
+  }
+}
+
+// 组件挂载时初始化
+initializeActiveState()
 </script>
 
 <template>
-  <el-tabs v-model="activeName" class="demo-tabs" tab-position="top" @tab-click="handleSelect">
-    <el-tab-pane v-for="item in HomeTabNavList" :label="item.label" :name="item.name" :key="item.index">
+  <div class="home-container">
+    <!-- 顶部主分类标签 -->
+    <el-tabs 
+      v-model="activeMainTab" 
+      class="main-tabs"
+      @tab-change="handleMainTabChange"
+    >
+      <el-tab-pane 
+        v-for="category in navConfig" 
+        :key="category.name"
+        :label="category.label" 
+        :name="category.name"
+      />
+    </el-tabs>
 
-    </el-tab-pane>
-  </el-tabs>
-  <el-tabs v-model="Router_Link" class="demo-tabs" tab-position="left" @tab-click="handleClick">
-    <el-tab-pane v-for="val in TabNavLists" :label="val.label" :name="val.name" :key="val.label">
-      <router-view></router-view>
-    </el-tab-pane>
-  </el-tabs>
+    <!-- 左侧子分类标签和内容区域 -->
+    <div class="content-area">
+      <el-tabs 
+        v-model="route.path" 
+        class="sub-tabs"
+        tab-position="left"
+        @tab-click="(tab) => handleSubTabClick(tab.paneName)"
+      >
+        <el-tab-pane 
+          v-for="item in subNavList" 
+          :key="item.path"
+          :label="item.label" 
+          :name="item.path"
+        >
+          <router-view />
+        </el-tab-pane>
+      </el-tabs>
+    </div>
+  </div>
 </template>
 
 <style scoped lang="less">
-.demo-tabs>.el-tabs__content {
-  padding: 32px;
-  color: #6b778c;
-  font-size: 32px;
-  font-weight: 600;
+.home-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
-.onebox {
-  width: 100%;
-  height: 50vh;
+.main-tabs {
+  flex-shrink: 0;
 }
 
-.flex-grow {
-  flex-grow: 1;
+.content-area {
+  flex: 1;
+  overflow: hidden;
+}
+
+.sub-tabs {
+  height: 100%;
+  
+  :deep(.el-tabs__content) {
+    height: calc(100% - 40px);
+    padding: 0;
+    
+    .el-tab-pane {
+      height: 100%;
+    }
+  }
 }
 </style>

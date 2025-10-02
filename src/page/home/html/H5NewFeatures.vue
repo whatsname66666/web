@@ -36,12 +36,12 @@ const logcolor = (e:any) => {
     </h3>
     <el-tag v-if="false" style="--el-tag-bg-color: red"></el-tag>
 
-    <el-button>Default</el-button>
+    <!-- <el-button>Default</el-button>
     <el-button type="primary">Primary</el-button>
     <el-button type="success">Success</el-button>
     <el-button type="info">Info</el-button>
     <el-button type="warning">Warning</el-button>
-    <el-button type="danger">Danger</el-button>
+    <el-button type="danger">Danger</el-button> -->
 
     <el-color-picker
      v-model="color" 
