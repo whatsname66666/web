@@ -151,6 +151,12 @@ class HttpClient {
       const finalResponse = await this.applyResponseInterceptors(response);
       
       if (!finalResponse.ok) {
+        // 如果是401未授权，则清除token并跳转登录页
+        // if (finalResponse.status === 401) {
+        //     sessionStorage.removeItem('auth_token');
+        //     // 这里使用路由跳转或window.location.href，根据你的项目情况选择
+        //     window.location.href = '/login'; 
+        // }
         throw new Error(`HTTP error! status: ${finalResponse.status}`);
       }
 
@@ -266,6 +272,29 @@ class HttpClient {
 }
 
 const request = new HttpClient("http://localhost:3000"); 
+// 添加认证拦截器
+request.useRequestInterceptor(async (config) => {
+  const token = sessionStorage.getItem('auth_token');
+  if (token) {
+    if (!config.headers) {
+      config.headers = {} as Record<string, string>;
+    }
+    const headers = config.headers as Record<string, string>;
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  return config;
+});
+
+// 添加响应拦截器处理认证错误
+request.useResponseInterceptor(async (response) => {
+  if (response.status === 401) {
+    // Token过期或无效，清除存储并跳转到登录页
+    // sessionStorage.removeItem('auth_token');
+    // window.location.href = '/login';
+  }
+  return response;
+});
+
 export {
   request,
 };

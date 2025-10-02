@@ -1,8 +1,8 @@
 <script setup lang="ts" name="movieList">
 import { ref, onMounted, } from "vue";
 import { ElMessage } from "element-plus";
-import { myRequest } from "@/util/fetch.js";
-
+// import { myRequest } from "@/util/fetch.js";
+import { moveList } from '@/page/api/base'
 // 类型定义
 interface Movie {
   id: number;
@@ -25,14 +25,18 @@ const total = ref(0);
 const fetchMovieData = async () => {
   loading.value = true;
   try {
-    const { data } = await myRequest.post<{ data: Movie[]; count: number }>(
-      "/home",
-      {
+    const { data } = await moveList({
         page: currentPage.value,
         pageSize: pageSize.value
-      }
-    );
-    console.log(data, "sss");
+    })
+    // const { data } = await myRequest.post<{ data: Movie[]; count: number }>(
+    //   "/home",
+    //   {
+    //     page: currentPage.value,
+    //     pageSize: pageSize.value
+    //   }
+    // );
+    // console.log(data, "sss");
     tableList.value = data.data || [];
     total.value = data.count || data.data?.length || 0;
   } catch (error) {

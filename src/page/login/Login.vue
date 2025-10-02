@@ -121,12 +121,14 @@ const validateForm = () => {
 const handleLogin = async (e:any) => {
   if (validateForm()) {
     try{
-      const loginData = await login({
+      const {data} = await login({
         email: username.value,
         password: password.value,
       })
-      if(loginData){
+      if(data){
         ElMessage.success('登录成功');
+         sessionStorage.setItem('auth_token', data.data.token);
+         console.log(data.data.token,'token')
         router.push({
           name: "home",
         });
