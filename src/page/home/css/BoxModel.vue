@@ -22,89 +22,7 @@ const backgroundStyle = ref({
 const formInline = reactive({
   music: "",
 });
-// const lrcLyrics = `
-// [ml:1.0]
-// [ti:我曾在... (I was There)]
-// [ar:无期迷途/Elena Borroni]
-// [al:残锋]
-// [by:]
-// [offset:0]
-// [00:00.00]我曾在... (I was There) - 无期迷途/Elena Borroni
-// [00:00.38]TME享有本翻译作品的著作权
-// [00:00.38]词：Michele Bettali/Gio Vincenzi
-// [00:00.55]
-// [00:00.55]曲：Michele Bettali/Gio Vincenzi
-// [00:00.71]
-// [00:00.71]编曲：Michele Bettali/Gio Vincenzi
-// [00:00.90]
-// [00:00.90]混音/母带：Michele Bettali/翊尧
-// [00:01.18]
-// [00:01.18]I was there when the sun was going down
-// [00:08.55]我曾茫然地看着日暮西沉
-// [00:08.55]Nothing left to be held in my hand
-// [00:16.00]两手空空 无所依傍
-// [00:16.00]I was there when my hope lost its crown
-// [00:23.29]我曾亲眼目睹 我至高无上的希望崩塌陨落
-// [00:23.29]When it fell as if made of sand
-// [00:32.10]如同流沙般轰然坠地
-// [00:32.10]I stared at your photos when I felt alone
-// [00:35.66]当孤独袭上心头 我总会凝视着你的留影
-// [00:35.66]I sat in that corner waiting for a call
-// [00:39.31]坐在无人知晓的角落里 沉默地守着电话
-// [00:39.31]I danced with your shadow for so many nights
-// [00:43.04]多少个无眠的夜晚 我与你的幽影翩然而舞
-// [00:43.04]I dreamed of our future till the morning lights
-// [00:46.71]直到晨光破晓 依然沉浸在我们的海市蜃楼
-// [00:46.71]Now mem'ries are fading into something real
-// [00:50.41]如今飘渺的回忆化为残酷而真切的现实
-// [00:50.41]Like salt on a wound that's never gonna heal
-// [00:54.46]如同那道永不愈合的伤口 撒上盐粒般刺痛
-// [00:54.46]I'm here in a place that should have been our home
-// [00:57.85]我留在这个本该为我们遮风避雨的地方
-// [00:57.85]And I'm sinking like a stone
-// [01:00.28]我如同一枚顽石 慢慢下坠沉没
-// [01:00.28]I was there when the sun was going down
-// [01:07.48]我曾茫然地看着日暮西沉
-// [01:07.48]Nothing left to be held in my hand
-// [01:14.97]两手空空 无所依傍
-// [01:14.97]I was there when my hope lost its crown
-// [01:22.34]我曾亲眼目睹 我至高无上的希望崩塌陨落
-// [01:22.34]When it fell as if made of sand
-// [01:45.89]如同流沙般轰然坠地
-// [01:45.89]I can feel you even though you're gone
-// [01:49.41]即便你已飘然远去 我也能感受到你的存在
-// [01:49.41]I can feel you deep inside my bones
-// [01:53.25]在我奔涌的骨血里 你的影子依然挥之不去
-// [01:53.25]Your scent still remaining on all of my clothes
-// [01:56.89]我的衣袂之间 依然残留着你的气息
-// [01:56.89]Plays tricks with my mind and I feel you close
-// [02:00.75]勾起我的思念 让我与你相依
-// [02:00.75]I cry every morning in an empty bed
-// [02:04.23]在空空荡荡的床上 我用泪水迎接每道晨曦
-// [02:04.23]You dwell in my heart can't get you out of my head
-// [02:08.42]你烙印在我的心底 挥之不去
-// [02:08.42]Lost in a place that has become unknown
-// [02:11.78]我迷失在这片迷途之中
-// [02:11.78]I'm sinking like a stone
-// [02:17.87]我如同一枚顽石 慢慢下坠沉没
-// [02:17.87]I was there when the sun was going down
-// [02:25.09]我曾茫然地看着日暮西沉
-// [02:25.09]Nothing left to be held in my hand
-// [02:32.48]两手空空 无所依傍
-// [02:32.48]I was there when my hope lost its crown
-// [02:39.83]我曾亲眼目睹 我至高无上的希望崩塌陨落
-// [02:39.83]When it fell as if made of sand
-// [02:47.24]如同流沙般轰然坠地
-// [02:47.24]I was there when the sun was going down
-// [02:54.53]我曾茫然地看着日暮西沉
-// [02:54.53]Nothing left to be held in my hand
-// [03:02.05]两手空空 无所依傍
-// [03:02.05]I was there when my hope lost its crown
-// [03:09.32]我曾亲眼目睹 我至高无上的希望崩塌陨落
-// [03:09.32]When it fell as if made of sand
-// [03:14.032]如同流沙般轰然坠地
-// [03:14.032]
-// `.trim();
+
 // 解析LRC歌词
 function parseLRC(lrcText) {
   const lines = lrcText.split("\n");
@@ -359,11 +277,22 @@ const setVolume = (val) => {
           <p>暂无歌词</p>
         </div>
       </div>
+
+
     </div>
   </div>
+      <div class="foot">
+      {{formInline.music}}
+      </div>
 </template>
 
 <style scoped>
+.foot{
+  width: 500px;
+  text-align: center;
+  color: #04fe5b;
+  font-size: 24px;
+}
 .demo-form-inline .el-input {
   --el-input-width: 220px;
 }

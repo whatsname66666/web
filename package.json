@@ -16,6 +16,7 @@
     "codemirror": "^5.65.2",
     "element-plus": "^2.7.6",
     "pinia": "^2.1.7",
+    "pixi.js": "^8.13.2",
     "vue": "^3.4.21",
     "vue-router": "^4.3.3",
     "wavesurfer.js": "^7.10.1",

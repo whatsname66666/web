@@ -1,9 +1,31 @@
 <script setup lang="ts" name="login">
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
-// import { request } from '@/util/fetch'
 import { login, register } from '@/page/api/base'
 import { ElMessage } from 'element-plus'
+import { Application, Assets } from 'pixi.js';
+
+//创建pixi应用
+const app = new Application();
+
+async function setup(){
+  //初始化创建应用对象 
+  //v8版本之后初始化为异步操作,init未完成之前app.canvas不可用
+  await app.init({ background: '#1099bb', resizeTo: window })
+  document.body.appendChild(app.canvas);
+}
+
+interface assetsType {
+  alias: string;
+  src: string;
+}
+async function preload(){
+  //预加载
+  const assets:assetsType[] = [
+    { alias: 'background', src: getBackgroundImageUrl() },
+    ]
+   await Assets.load(assets);
+}
 
 const router = useRouter();
 const username = ref("");
@@ -11,12 +33,61 @@ const password = ref("");
 const confirmPassword = ref("");
 const rememberMe = ref(false);
 const isRegisterMode = ref(false); // 新增：区分登录/注册模式
+const backgroundImageUrl = ref('');
 
 const usernameError = ref("");
 const passwordError = ref("");
 const confirmPasswordError = ref("");
+const imgLength = ref(0)
 
-// 创建动态粒子背景
+// 获取背景图片URL
+const getBackgroundImageUrl = () => {
+  try {
+    // 方法1: 使用静态导入（推荐）
+    // return new URL('@/assets/image/悬城cg1.jpeg', import.meta.url).href;
+    
+    // 方法2: 使用import.meta.glob
+    const imageModules = import.meta.glob('@/assets/image/*.{jpeg,jpg,png,svg}', { 
+      eager: true,
+      as: 'url' 
+    });
+    
+    if(imgLength.value >= Object.keys(imageModules).length - 1) {
+      imgLength.value = 0
+    }else{
+      imgLength.value++
+      console.log(Object.keys(imageModules).length,imgLength.value)
+    }
+    // 获取第一张图片或指定图片
+    const imagePath = Object.keys(imageModules)[imgLength.value]; // 第一张图片
+    // 或者指定图片（如果知道文件名）：
+    // const imagePath = '@/assets/image/悬城cg1.jpeg';
+    
+    if (imageModules[imagePath]) {
+      backgroundImageUrl.value = imageModules[imagePath] as string;
+      return ''
+    }
+    
+    // 方法3: 直接使用相对路径（如果图片在public目录）
+    // return '/assets/image/悬城cg1.jpeg';
+    
+    return '';
+  } catch (error) {
+    console.error('加载背景图片失败:', error);
+    return '';
+  }
+};
+
+// 在组件挂载时设置背景图片
+onMounted(async () => {
+  // getBackgroundImageUrl();
+  createParticles();
+  createFloatingElements();
+  await setup();
+  await preload();
+});
+
+// 其他函数保持不变...
 const createParticles = () => {
   const bgAnimation = document.querySelector(".bg-animation");
   if (!bgAnimation) return;
@@ -90,10 +161,6 @@ const validateForm = () => {
     usernameError.value = "用户名至少4个字符";
     isValid = false;
   } 
-  // else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(username.value)) {
-  //   usernameError.value = "请输入有效的邮箱地址";
-  //   isValid = false;
-  // }
 
   // 验证密码
   if (!password.value) {
@@ -199,20 +266,19 @@ const handleSubmit = () => {
     handleLogin(new Event('submit'));
   }
 };
-
-onMounted(() => {
-  createParticles();
-  createFloatingElements();
-});
 </script>
 
 <template>
   <Teleport to="body">
-    <div class="body">
+    
+    <div class="body"
+    :style="{ backgroundImage: backgroundImageUrl ? `url(${backgroundImageUrl})` : 'none' }"
+    >
       <div class="bg-animation"></div>
 
       <div class="login-container">
         <div class="login-header">
+          <el-button type="info" @click="getBackgroundImageUrl" class='changbc'>切换背景</el-button>
           <h1>{{ isRegisterMode ? '创建账号' : '欢迎回来' }}</h1>
           <p>{{ isRegisterMode ? '请输入您的信息创建新账号' : '请输入您的账号信息登录系统' }}</p>
         </div>
@@ -226,7 +292,6 @@ onMounted(() => {
                 type="text"
                 v-model="username"
                 placeholder="请输入邮箱地址"
-                :class="{ error: usernameError }"
               />
             </div>
             <div class="error-message">{{ usernameError }}</div>
@@ -238,9 +303,9 @@ onMounted(() => {
               <i>🔒</i>
               <input
                 type="password"
+                autocomplete="off"
                 v-model="password"
                 placeholder="请输入密码"
-                :class="{ error: passwordError }"
               />
             </div>
             <div class="error-message">{{ passwordError }}</div>
@@ -253,6 +318,7 @@ onMounted(() => {
               <i>🔒</i>
               <input
                 type="password"
+                autocomplete="off"
                 v-model="confirmPassword"
                 placeholder="请再次输入密码"
                 :class="{ error: confirmPasswordError }"
@@ -313,14 +379,32 @@ onMounted(() => {
   display: flex;
   justify-content: center;
   align-items: center;
+  /* 保留渐变背景作为备用 */
   background: linear-gradient(45deg, #3498db, #8e44ad, #3498db);
-  background-size: 400% 400%;
+  // background-size: 400% 400%;
   animation: gradientBG 15s ease infinite;
+  /* 添加背景图片样式 */
+  background-size: cover;
+  // background-size: auto 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
   padding: 20px;
   overflow: hidden;
   position: relative;
 }
 
+/* 添加深色遮罩，确保文字可读性 */
+.body::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 0;
+}
 /* 动态背景 */
 .bg-animation {
   position: fixed;
@@ -376,8 +460,7 @@ onMounted(() => {
   max-width: 450px;
   padding: 40px;
   border-radius: 20px;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(12px);
+  // backdrop-filter: blur(12px);
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
   border: 1px solid rgba(255, 255, 255, 0.15);
   overflow: hidden;
@@ -484,16 +567,29 @@ onMounted(() => {
 .input-with-icon input {
   width: 100%;
   padding: 16px 20px 16px 50px;
-  border: none;
+  border: none !important;
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.12);
+  background-color: rgba(255, 255, 255, 0.1) !important;
   color: white;
   font-size: 16px;
   transition: all 0.3s ease;
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
-
+/* 解决自动填充背景色问题的关键代码 */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px rgba(255, 255, 255, 0.1) inset !important;
+    -webkit-text-fill-color: #333 !important;
+    transition: background-color 5000s ease-in-out 0s;
+}
+/* 对于焦点状态的自动填充输入框 */
+input:focus:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0 30px rgba(255, 255, 255, 0.1) inset !important;
+}
+      
 .input-with-icon input:focus {
   outline: none;
   background: rgba(255, 255, 255, 0.18);
@@ -556,11 +652,7 @@ onMounted(() => {
   padding: 16px;
   border: none;
   border-radius: 12px;
-  background: linear-gradient(
-    45deg,
-    rgba(255, 255, 255, 0.9),
-    rgba(255, 255, 255, 0.8)
-  );
+  background-color: rgba(255, 255, 255, 0.15) !important;
   color: #3498db;
   font-size: 17px;
   font-weight: 600;
@@ -590,11 +682,7 @@ onMounted(() => {
 }
 
 .login-button:hover {
-  background: linear-gradient(
-    45deg,
-    rgba(255, 255, 255, 1),
-    rgba(255, 255, 255, 0.9)
-  );
+  background: linear-gradient(45deg, #001b50, rgb(146 146 146 / 90%));
 }
 
 .register-button:hover {

@@ -36,6 +36,9 @@ const Star = () => {
     ballNumber.value = RefshNum([])
 }
 const End = () => {}
+const end = function(){
+  
+}
 
 // type func<T> = (data:T) => T
 </script>

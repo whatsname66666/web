@@ -35,7 +35,7 @@ export default defineConfig(({ command }) => {
         mockPath: "./src/mock",
       }),
     ],
-    assetsInclude: ["**/*.lrc"],
+    assetsInclude: ["**/*.lrc",'**/*.jpeg', '**/*.jpg', '**/*.png'],
     // transforms: [
     //   {
     //     test: ({ path }) => path.endsWith(".lrc"),

@@ -23,3 +23,8 @@ export const register = (params:LoginType): Promise<any> => {
 export const moveList = (params:MoveType): Promise<any> => {
     return request.post('/api/example/movieList',params)
 }
+
+//获取无期音乐列表
+export const wqmtMusicList = (params:MoveType): Promise<any> => {
+    return request.post('/api/wqmt/musicList',params)
+}

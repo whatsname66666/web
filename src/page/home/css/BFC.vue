@@ -1,63 +1,129 @@
 <script setup lang="ts" name="bfc">
-import image from '@/assets/image/lushi.jpg'
-import { ref } from "vue";
-import { useCssVar } from "@vueuse/core";
-const el = ref(null);
-let rx = useCssVar("--rx",el)
-let ry = useCssVar("--ry",el)
-const myref = ref<HTMLElement>()
-const tomove = (e:any) => {  
-    const {offsetX,offsetY} = e
-    console.log(myref.value?.clientHeight)
+import { ref, onMounted, } from "vue";
+import { ElMessage } from "element-plus";
+import { wqmtMusicList } from '@/page/api/base'
+// 类型定义
+interface Movie {
+  id: number;
+  title: string;
+  url: string;
+  music_album_id: number;
+}
 
-}
-const toleave = () => {
-    rx = ref("0deg")
-    ry = ref("0deg")
-    // const { targe: { style }} = e
-    // style.setProperty("--rx","0deg")
-    // style.setProperty("--ry","0deg")
-}
+// 响应式数据
+const tableList = ref<Movie[]>([]);
+const loading = ref(false);
+const pageSize = ref(10);
+const currentPage = ref(1);
+const total = ref(0);
+
+// 获取电影数据
+const fetchMovieData = async () => {
+  loading.value = true;
+  try {
+    const { data } = await wqmtMusicList({
+        page: currentPage.value,
+        pageSize: pageSize.value
+    })
+    tableList.value = data.data || [];
+    total.value = data.count || data.data?.length || 0;
+  } catch (error) {
+    console.error("获取电影数据失败:", error);
+    ElMessage.error("获取电影数据失败，请重试");
+    tableList.value = [];
+    total.value = 0;
+  } finally {
+    loading.value = false;
+  }
+};
+
+// 分页变化处理
+const handlePageChange = () => {
+  fetchMovieData()
+};
+
+// 组件挂载时获取数据
+onMounted(() => {
+  fetchMovieData();
+});
+
+// 暴露方法供模板使用
+const refreshData = () => {
+  currentPage.value = 1;
+  fetchMovieData();
+};
 </script>
 
 <template>
-    <h3>
-        <span class="TitlelinearGradient">BFC</span>
-    </h3>
-    <div class="outline-offset"></div>
-    <div>
-        <div class="imgbox">
-            <img class="setclass" 
-            ref="mybox"
-            @mouseleave="toleave" 
-            @mousemove="tomove" 
-            :src="image" fit="cover" />            
-        </div>
+  <div class="movie-list-container">
+    <!-- 操作栏 -->
+    <div class="action-bar">
+      <el-button type="primary" :loading="loading" @click="refreshData">
+        {{ loading ? "加载中..." : "刷新数据" }}
+      </el-button>
+      <span class="total-text">共 {{ total }} 条数据</span>
     </div>
+
+    <!-- 数据表格 -->
+    <el-table v-loading="loading" element-loading-text="数据加载中..." max-height="500" table-layout="auto" border
+      :data="tableList" stripe style="width: 100%">
+      <el-table-column align="center" prop="id" label="ID" width="80" />
+      <el-table-column align="center" prop="title" label="标题" width="280" show-overflow-tooltip />
+      <el-table-column align="center" prop="publish_time" label="发布日期" width="180" show-overflow-tooltip />
+      <!-- <el-table-column align="center" prop="music_album_id" label="活动ID" width="150">
+      </el-table-column> -->
+      <el-table-column align="center" prop="url" label="链接地址" show-overflow-tooltip>
+        <template #default="{ row }">
+          <el-link :href="row.url" target="_blank" type="primary" v-if="row.url">
+            {{ row.url }}
+          </el-link>
+          <span v-else>-</span>
+        </template>
+      </el-table-column>
+    </el-table>
+
+    <!-- 分页组件 -->
+    <div class="pagination">
+      <el-pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :page-sizes="[10, 20, 50, 100]"
+        :total="total" :disabled="loading" background layout="total, sizes, prev, pager, next, jumper"
+        @size-change="handlePageChange" @current-change="handlePageChange" />
+    </div>
+  </div>
 </template>
 
 <style scoped lang="less">
-.outline-offset {
-    width: 180px;
-    height: 80px;
-    border: 1px solid red;
-    outline: 1px solid green;
-    outline-offset: 20px;
-}
-.imgbox{
+.movie-list-container {
+  padding: 20px;
+
+  .action-bar {
     display: flex;
-    flex: 1;
-    height: 600px;
-    justify-content: center;  
-    .setclass{
-        width: 362px;
-        height: 533px;
-        border-radius: 10px;
-        transition: .3s;
-        transform: perspective(500px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+
+    .total-text {
+      color: #606266;
+      font-size: 14px;
     }
-    .setclass:hover{
-        box-shadow: -3px -3px 10px #54a29e, 3px 3px 10px #a79d66;
+  }
+
+  .pagination {
+    margin: 20px 0;
+    display: flex;
+    justify-content: center;
+  }
+}
+
+// 响应式设计
+@media (max-width: 768px) {
+  .movie-list-container {
+    padding: 10px;
+
+    .action-bar {
+      flex-direction: column;
+      gap: 10px;
+      align-items: flex-start;
     }
+  }
 }
 </style>
